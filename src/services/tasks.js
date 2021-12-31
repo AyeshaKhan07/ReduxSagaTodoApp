@@ -6,5 +6,9 @@ export const addTaskAPI = async (payload) => {
 };
 
 export const removeTaskAPI = async (id) => {
-    return await axios.delete(TODO_APP_URLS.REMOVE_TASK(id));
-  };
+  return await axios.delete(TODO_APP_URLS.REMOVE_TASK(id));
+};
+
+export const updateTaskAPI = async (payload) => {
+  return await axios.put(TODO_APP_URLS.UPTADE_TASK, payload);
+};

@@ -1,9 +1,11 @@
-import { ADD_TODO, ADD_TODO_FAILURE, ADD_TODO_SUCCESS, EDIT_TASK, REMOVE_TASK, REMOVE_TASK_FAILURE, REMOVE_TASK_SUCCESS, TASK_DONE, TASK_DONE_FAILURE, TASK_DONE_SUCCESS } from "../actions/actionTypes";
+import { ADD_TODO, ADD_TODO_FAILURE, ADD_TODO_SUCCESS, EDIT_TASK, EDIT_TASK_FAILURE, EDIT_TASK_SUCCESS, REMOVE_TASK, REMOVE_TASK_FAILURE, REMOVE_TASK_SUCCESS, TASK_DONE, TASK_DONE_FAILURE, TASK_DONE_SUCCESS } from "../actions/actionTypes";
 
 const initialState = {
     tasksToBeDone: [],
     tasksCompleted: [],
     addTaskLoading: false,
+    updateTaskLoading: false,
+    removeTaskLoading: false
 };
 
 export default function appReducer(state = initialState, action) {
@@ -21,7 +23,6 @@ export default function appReducer(state = initialState, action) {
                     {
                         id,
                         content,
-                        loading: false
                     }
                 ],
                 addTaskLoading: false
@@ -55,36 +56,42 @@ export default function appReducer(state = initialState, action) {
         }
 
         case REMOVE_TASK: {
-            const { id } = action.payload;
-            const index = state.tasksToBeDone.findIndex(task => task.id == id)
-            state.tasksToBeDone[index].loading = true;
-            return state
+            return { ...state, removeTaskLoading: true }
         }
 
         case REMOVE_TASK_SUCCESS: {
             const { id } = action.payload;
-            const index = state.tasksToBeDone.findIndex(task => task.id == id)
-            state.tasksToBeDone[index].loading = false;
             const tempTasksToBeDone = state.tasksToBeDone.filter(task => task.id != id)
             return {
                 ...state,
-                tasksToBeDone: tempTasksToBeDone
+                tasksToBeDone: tempTasksToBeDone,
+                removeTaskLoading: false
             }
         }
 
         case REMOVE_TASK_FAILURE: {
-            const { id } = action.payload;
-            const index = state.tasksToBeDone.findIndex(task => task.id == id)
-            state.tasksToBeDone[index].loading = false;
-            return state
+            return { ...state, removeTaskLoading: false }
         }
 
         case EDIT_TASK: {
+            return {
+                ...state, updateTaskLoading: true
+            }
+        }
+
+        case EDIT_TASK_SUCCESS: {
             const { id, content } = action.payload;
             const index = state.tasksToBeDone.findIndex(task => task.id == id)
             state.tasksToBeDone[index].content = content
             return {
-                ...state
+                ...state,
+                updateTaskLoading: false
+            }
+        }
+
+        case EDIT_TASK_FAILURE: {
+            return {
+                ...state, updateTaskLoading: false
             }
         }
         default:

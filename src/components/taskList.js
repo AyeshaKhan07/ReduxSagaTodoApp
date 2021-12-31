@@ -1,22 +1,22 @@
-import { Button, Grid, IconButton, TextField, Typography, CircularProgress } from "@material-ui/core";
+import { Button, CircularProgress, Grid, IconButton, TextField, Typography } from "@material-ui/core";
 import { Done, RemoveCircleOutline, Edit } from "@material-ui/icons";
 import { withStyles } from '@material-ui/core/styles';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
-import { useSelector, useDispatch } from 'react-redux';
-import { useState } from "react";
+import { useSelector } from 'react-redux';
+import { useEffect, useState } from "react";
 import { editTask, markTaskDone, removeTask } from "../redux/actions";
+import { useDispatch } from 'react-redux';
 
 export default function TaskList() {
     let dispatch = useDispatch();
     let tasksToBeDone = useSelector(state => state.tasksToBeDone)
-    // let loading = useSelector(state => state.removeTaskLoading)
+    let updateLoading = useSelector(state => state.updateTaskLoading)
+    let removeLoading = useSelector(state => state.removeTaskLoading)
     const completedTasks = useSelector(state => state.tasksCompleted)
-    const [loadingIndex, setLoadingIndex] = useState();
-    let loading = loadingIndex ? useSelector(state => state.tasksToBeDone[loadingIndex].loading) : false;
-    const [loadingId, setLoadingId] = useState(false);
     const [tab, setTab] = useState(0);
     const [editViewForTaskId, setEditViewForTaskId] = useState();
+    const [loadinForTaskId, setLoadingForTaskId] = useState();
     const [taskDetails, setTaskDetails] = useState({
         id: 0,
         content: ""
@@ -25,9 +25,7 @@ export default function TaskList() {
         dispatch(markTaskDone(id));
     }
     const handleRemoveTask = (id) => {
-        const index = tasksToBeDone.findIndex(task => task.id == id)
-        setLoadingIndex(index);
-        setLoadingId(id);
+        setLoadingForTaskId(id);
         dispatch(removeTask(id));
     }
     const handleEditTaskView = (id) => {
@@ -39,7 +37,6 @@ export default function TaskList() {
     }
     const handleUpdateTaskClick = () => {
         dispatch(editTask(taskDetails));
-        setEditViewForTaskId(null)
     }
     const AntTabs = withStyles({
         root: {
@@ -83,19 +80,31 @@ export default function TaskList() {
         selected: {},
     }))((props) => <Tab disableRipple {...props} />);
 
+    useEffect(() => {
+        if (!updateLoading)
+            setEditViewForTaskId(null)
+        if (!removeLoading)
+            setLoadingForTaskId(null)
+    }, [updateLoading, removeLoading])
     const mapTasksToBeDone = () => {
         return tasksToBeDone.map((task, index) => editViewForTaskId != task.id ? (
             <Grid container justifyContent='center' alignItems="center" key={index}>
-                <Grid item xs={2}><Typography>{task.content}</Typography></Grid>
-                {loading && loadingId == task.id ? <><CircularProgress /></> : <> <Grid item>
-                    <IconButton onClick={() => handleCheckTask(task.id)}><Done color="primary" /></IconButton>
-                </Grid>
-                    <Grid item>
-                        <IconButton onClick={() => handleRemoveTask(task.id)}><RemoveCircleOutline color="error" /></IconButton>
-                    </Grid>
-                    <Grid item>
-                        <IconButton onClick={() => handleEditTaskView(task.id)}><Edit color="action" /></IconButton>
-                    </Grid></>}
+                {removeLoading && loadinForTaskId == task.id ?
+                    <>
+                        <CircularProgress />
+                    </> :
+                    <>
+                        <Grid item xs={2}><Typography>{task.content}</Typography></Grid>
+                        <Grid item>
+                            <IconButton onClick={() => handleCheckTask(task.id)}><Done color="primary" /></IconButton>
+                        </Grid>
+                        <Grid item>
+                            <IconButton onClick={() => handleRemoveTask(task.id)}><RemoveCircleOutline color="error" /></IconButton>
+                        </Grid>
+                        <Grid item>
+                            <IconButton onClick={() => handleEditTaskView(task.id)}><Edit color="action" /></IconButton>
+                        </Grid>
+                    </>}
             </Grid>
         ) : (
             <Grid container justifyContent='center' alignItems="center" spacing={1} key={index}>
@@ -108,7 +117,7 @@ export default function TaskList() {
                         onChange={(e) => setTaskDetails({ ...taskDetails, content: e.target.value })} />
                 </Grid>
                 <Grid item>
-                    <Button color="primary" onClick={handleUpdateTaskClick}>Update</Button>
+                    {updateLoading ? <CircularProgress /> : <Button color="primary" onClick={handleUpdateTaskClick}>Update</Button>}
                 </Grid>
             </Grid>
         ))
