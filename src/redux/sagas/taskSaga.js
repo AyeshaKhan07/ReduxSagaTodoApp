@@ -51,13 +51,11 @@ export function* removeTask(action) {
 export function* updateTask(action) {
 
     try {
-        const response = yield call(updateTaskAPI, action.payload)
-        console.log(response, "response")
+        yield call(updateTaskAPI, action.payload)
         yield put({type: EDIT_TASK_SUCCESS, payload: action.payload})
     }
     catch (error)
     {
-        console.log(error.message)
         yield put({type: EDIT_TASK_FAILURE})
     }
 }
