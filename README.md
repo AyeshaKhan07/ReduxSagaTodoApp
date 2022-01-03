@@ -30,3 +30,5 @@ $ npm install
 # Run the app
 $ npm start
 ```
+## Author
+@AyeshaKhan07
